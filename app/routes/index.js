@@ -16,9 +16,16 @@ router.post('/upload', (req, res) => {
   });
 
   form.parse(req, (error, fields,  files) => {
-    console.log(error);
-    console.log(fields);
-    console.log(files);
+    
+    if(!error){
+      res.json({
+        files
+      });
+    }else{
+      res.json({error});
+    }
+ 
+
   });
 
 });

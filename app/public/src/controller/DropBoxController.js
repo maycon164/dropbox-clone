@@ -19,7 +19,7 @@ class DropBoxController{
         //Pega os arquivos do nosso input e manda para upload
         this.inputFilesEl.addEventListener('change', event => {
             
-            this.uploadFilesTask(event.target.files);
+            this.uploadFilesTask(event.target.files).then(resp => console.log(resp));
 
             this.snackModalBar.style.display = 'block';
         });

@@ -16,11 +16,47 @@ class DropBoxController{
             this.inputFilesEl.click();
         });
 
+        //Pega os arquivos do nosso input e manda para upload
         this.inputFilesEl.addEventListener('change', event => {
-            console.log(event.target.files);
+            
+            this.uploadFilesTask(event.target.files);
+
             this.snackModalBar.style.display = 'block';
         });
     }
 
+    uploadFilesTask(files){
+        let filesPromises = [];
+
+        [...files].forEach(file => {
+
+            filesPromises.push( new Promise( (resolve, reject) => {
+                
+                
+                    let ajax = new XMLHttpRequest();
+                    
+                    ajax.open('POST', '/upload');
+    
+                    ajax.onload = event => {
+                        
+                        try{
+                            resolve(JSON.parse(ajax.responseText));
+                        }catch(error){
+                            reject(error);
+                        }
+    
+                    }
+    
+                    ajax.onerror = error => reject(error);
+    
+                    let formData = new FormData();
+                    formData.append('input-file', file);
+                    
+                    ajax.send(formData);
+            }));
+        });
+
+        return Promise.all(filesPromises);
+    }
 
 }

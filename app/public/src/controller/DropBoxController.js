@@ -1,3 +1,4 @@
+
 class DropBoxController{
 
     constructor(){
@@ -12,9 +13,24 @@ class DropBoxController{
         this.timeLeft = this.snackModalBar.querySelector('.timeleft');
         this.barProgress = this.snackModalBar.querySelector('.mc-progress-bar-fg');
 
-
         this.initEvents();
+        this.connectFirebase();
 
+    }
+
+    connectFirebase(){
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjl5ZPS1bNPX_zsL8j5e_PbMjxofCSpZY",
+            authDomain: "dropbox-clone-b4598.firebaseapp.com",
+            databaseURL: "https://dropbox-clone-b4598-default-rtdb.firebaseio.com",
+            projectId: "dropbox-clone-b4598",
+            storageBucket: "dropbox-clone-b4598.appspot.com",
+            messagingSenderId: "797779786336",
+            appId: "1:797779786336:web:fdb28d106f1d57e33fe105",
+            measurementId: "G-X7BQZ7ZEC4"          
+          };
+
+          firebase.initializeApp(firebaseConfig);
     }
 
     initEvents(){
@@ -26,12 +42,17 @@ class DropBoxController{
         //Pega os arquivos do nosso input e manda para upload
         this.inputFilesEl.addEventListener('change', event => {
             
-            this.uploadFilesTask(event.target.files).then(resp => console.log(resp));
+            this.uploadFilesTask(event.target.files).then(resp => {
+                
+           
+            })
+            
             this.modalShow();
             this.inputFilesEl.value = '';
             
         });
     }
+
 
     modalShow(show = true){
         this.snackModalBar.style.display = (show) ? "block" : "none";
@@ -117,6 +138,10 @@ class DropBoxController{
             return `${seg} segundos`;
         }
         return `${hour} horas ${min} minutos e ${seg} segundos`;
+    }
+
+    getFirebaseRef(){
+        return firebase.database().ref('file');
     }
 
     getFileView(file){

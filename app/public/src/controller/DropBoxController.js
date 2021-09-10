@@ -3,6 +3,8 @@ class DropBoxController{
 
     constructor(){
         
+        this.onselectionchange = new Event('selectionchange');
+
         this.btnSendFilesEl = document.querySelector('#btn-send-file');
         this.inputFilesEl = document.querySelector('#files');
 
@@ -14,6 +16,11 @@ class DropBoxController{
         this.barProgress = this.snackModalBar.querySelector('.mc-progress-bar-fg');
 
         this.listOfFilesDirectories = document.querySelector('#list-of-files-and-directories')
+
+        //Botoes de opção 
+        this.btnNewFolder = document.querySelector('#btn-new-folder');
+        this.btnRename = document.querySelector('#btn-rename');
+        this.btnDelete = document.querySelector('#btn-delete');
 
         this.initEvents();
         this.connectFirebase();
@@ -38,6 +45,34 @@ class DropBoxController{
     }
 
     initEvents(){
+
+        //pegando o evento de mudança de foco nas lis
+        this.listOfFilesDirectories.addEventListener('selectionchange', event => {
+            
+            console.log(this.getFilesSelection().length);
+
+            switch(this.getFilesSelection().length){
+                
+                case 0:
+                    
+                    this.btnNewFolder.style.display = "block";
+                    this.btnRename.style.display = "none";
+                    this.btnDelete.style.display = "none";
+                    break;
+                
+                case 1:
+
+                    this.btnRename.style.display = "block";
+                    this.btnDelete.style.display = "block";
+                    break;
+
+                default:
+                    this.btnRename.style.display = "none";
+                    this.btnDelete.style.display = "block";
+                    break;
+            }
+        
+        });
         
         this.btnSendFilesEl.addEventListener('click', event => {
             this.inputFilesEl.click();
@@ -68,6 +103,11 @@ class DropBoxController{
             
         });
     }
+
+    getFilesSelection(){
+        return this.listOfFilesDirectories.querySelectorAll('.selected')
+    }
+
     //limpa o campo do input, destrava o btnSendFIle
     uploadComplete(){
         this.modalShow(false);
@@ -176,7 +216,7 @@ class DropBoxController{
     }
 
     initEventsLi(li){
-
+  
         li.addEventListener('click', event => {
             
             if(event.shiftKey){
@@ -201,7 +241,8 @@ class DropBoxController{
                            item.classList.add('selected');
                        }
                    })
-
+                    // disparando evento de mudança de foco nas lis          
+                    this.listOfFilesDirectories.dispatchEvent(this.onselectionchange);
                    return true;
 
                 }
@@ -216,6 +257,7 @@ class DropBoxController{
             }
             
             li.classList.toggle('selected');
+            this.listOfFilesDirectories.dispatchEvent(this.onselectionchange);
         })
         
     }

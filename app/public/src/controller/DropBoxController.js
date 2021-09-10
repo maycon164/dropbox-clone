@@ -46,10 +46,22 @@ class DropBoxController{
 
     initEvents(){
 
+        this.btnRename.addEventListener('click', event => {
+            let li = this.getFilesSelection()[0];
+            let file = JSON.parse(li.dataset.file);
+            let key = li.dataset.key;
+
+            let name = prompt("Renomear Arquivo: ", file.name);
+
+            if(name){
+                file.name = name;
+                this.getFirebaseRef().child(key).set(file);
+            }
+            
+        });
+
         //pegando o evento de mudança de foco nas lis
         this.listOfFilesDirectories.addEventListener('selectionchange', event => {
-            
-            console.log(this.getFilesSelection().length);
 
             switch(this.getFilesSelection().length){
                 
@@ -207,7 +219,7 @@ class DropBoxController{
         let li = document.createElement('li');
         this.initEventsLi(li);
         li.dataset.key = key;
-
+        li.dataset.file = JSON.stringify(file);
         li.innerHTML = `
         ${this.getFileIconView(file)}
         <div class="name text-center">${file.name}</div>

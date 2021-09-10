@@ -42,17 +42,34 @@ class DropBoxController{
         //Pega os arquivos do nosso input e manda para upload
         this.inputFilesEl.addEventListener('change', event => {
             
+            //Trava btnSendFiles
+            this.btnSendFilesEl.disabled = true;
+            
             this.uploadFilesTask(event.target.files).then(resp => {
                 
-           
-            })
+                resp.forEach(item => {
+                    this.getFirebaseRef().push().set(item.files['input-file']);
+                });              
+
+                this.uploadComplete();
+
+            }).catch(error => {
+                
+                this.uploadComplete();
+
+                console.error(error);
+            });
             
             this.modalShow();
-            this.inputFilesEl.value = '';
             
         });
     }
-
+    //limpa o campo do input, destrava o btnSendFIle
+    uploadComplete(){
+        this.modalShow(false);
+        this.inputFilesEl.value = '';
+        this.btnSendFilesEl.disabled = false;
+    }
 
     modalShow(show = true){
         this.snackModalBar.style.display = (show) ? "block" : "none";
@@ -71,7 +88,6 @@ class DropBoxController{
                     ajax.open('POST', '/upload');
     
                     ajax.onload = event => {
-                        this.modalShow(false);
                         try{
                             resolve(JSON.parse(ajax.responseText));
                         }catch(error){
@@ -89,7 +105,6 @@ class DropBoxController{
                     }
     
                     ajax.onerror = error => {
-                        this.modalShow();  
                         reject(error);
                     }
     
@@ -114,7 +129,7 @@ class DropBoxController{
     
         let timeLeft = ((100 - percent) * timeSpent) / percent;
 
-        console.log(timeSpent, timeLeft, percent);
+        //console.log(timeSpent, timeLeft, percent);
 
         this.barProgress.style.width = `${percent}%`;
         this.fileName.innerHTML = file.name;
@@ -141,7 +156,7 @@ class DropBoxController{
     }
 
     getFirebaseRef(){
-        return firebase.database().ref('file');
+        return firebase.database().ref('files');
     }
 
     getFileView(file){

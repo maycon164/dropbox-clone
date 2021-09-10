@@ -165,13 +165,61 @@ class DropBoxController{
 
     getFileView(file, key){
         let li = document.createElement('li');
+        this.initEventsLi(li);
         li.dataset.key = key;
+
         li.innerHTML = `
         ${this.getFileIconView(file)}
         <div class="name text-center">${file.name}</div>
         `
         return li;
     }
+
+    initEventsLi(li){
+
+        li.addEventListener('click', event => {
+            
+            if(event.shiftKey){
+                let firstLi = this.listOfFilesDirectories.querySelector('.selected');
+                
+                if(firstLi){
+                    let lis = li.parentElement.childNodes;
+                    
+                    //pegando os indices dos elementos start e end 
+                    let indexStart;
+                    let indexEnd;
+                 
+                    lis.forEach((item, index) => {
+                        if(item === firstLi) indexStart = index;
+                        if(item === li) indexEnd = index;
+                    });
+
+                    let indices = [indexStart, indexEnd].sort();
+                    
+                   lis.forEach((item, index) => {
+                       if(index >= indices[0] && index <= indices[1]){
+                           item.classList.add('selected');
+                       }
+                   })
+
+                   return true;
+
+                }
+            }
+
+            //SELECTIONAR COM CTRL PRESSIONADO
+            if(!event.ctrlKey){
+                
+                this.listOfFilesDirectories.querySelectorAll('li.selected').forEach(li => {
+                    li.classList.remove('selected');
+                });
+            }
+            
+            li.classList.toggle('selected');
+        })
+        
+    }
+
     getFileIconView(file){
         switch(file.type){
             case "folder":

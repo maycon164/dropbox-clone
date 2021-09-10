@@ -13,8 +13,12 @@ class DropBoxController{
         this.timeLeft = this.snackModalBar.querySelector('.timeleft');
         this.barProgress = this.snackModalBar.querySelector('.mc-progress-bar-fg');
 
+        this.listOfFilesDirectories = document.querySelector('#list-of-files-and-directories')
+
         this.initEvents();
         this.connectFirebase();
+
+        this.getFiles();
 
     }
 
@@ -159,13 +163,14 @@ class DropBoxController{
         return firebase.database().ref('files');
     }
 
-    getFileView(file){
-        return `
-        <li>
-            ${this.getFileIconView(file)}
+    getFileView(file, key){
+        let li = document.createElement('li');
+        li.dataset.key = key;
+        li.innerHTML = `
+        ${this.getFileIconView(file)}
         <div class="name text-center">${file.name}</div>
-        </li>
         `
+        return li;
     }
     getFileIconView(file){
         switch(file.type){
@@ -248,6 +253,7 @@ class DropBoxController{
                 break;
 
             case "audio/mp3":
+            case "audio/mpeg":
                 return `
                 <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                     <title>content-audio-large</title>
@@ -325,5 +331,19 @@ class DropBoxController{
                 
             `;
         }
+    }
+
+    getFiles(){
+
+        this.getFirebaseRef().on('value', snapshot => {
+            this.listOfFilesDirectories.innerHTML = "";
+            
+            snapshot.forEach(item => {
+                let key = item.key;
+                let file = item.val();
+                this.listOfFilesDirectories.appendChild(this.getFileView(file, key));
+            });
+
+        });
     }
 }

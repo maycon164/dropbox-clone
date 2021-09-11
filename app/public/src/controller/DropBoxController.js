@@ -2,6 +2,9 @@
 class DropBoxController{
 
     constructor(){
+
+        //Pastas
+        this.currentFolder = ['arquivos'];
         
         this.onselectionchange = new Event('selectionchange');
 
@@ -45,6 +48,19 @@ class DropBoxController{
     }
 
     initEvents(){
+        
+        this.btnNewFolder.addEventListener('click', event => {
+            let name = prompt('Nome da nova pasta: ');
+            
+            if(name){
+                this.getFirebaseRef().push().set({
+                    name,
+                    type: 'folder',
+                    path: this.currentFolder.join('/')
+                });
+            }
+
+        });
 
         this.btnDelete.addEventListener('click', event => {
             

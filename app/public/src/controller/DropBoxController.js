@@ -129,11 +129,18 @@ class DropBoxController{
             //Trava btnSendFiles
             this.btnSendFilesEl.disabled = true;
             
-            this.uploadFilesTask(event.target.files).then(resp => {
+            this.uploadFilesTask(event.target.files).then(responses => {
                 
-                resp.forEach(item => {
-                    this.getFirebaseRef().push().set(item.files['input-file']);
-                });              
+                responses.forEach(resp => {
+            
+                    this.getFirebaseRef().push({
+                        name: resp.name,
+                        type: resp.contentType,
+                        size: resp.size,
+                        path: resp.fullPath
+                    });
+            
+                });
 
                 this.uploadComplete();
 
@@ -196,16 +203,50 @@ class DropBoxController{
         let filesPromises = [];
 
         [...files].forEach(file => {
-
-            let formData = new FormData();
+            
+            /* let formData = new FormData();
             formData.append('input-file', file);
 
             filesPromises.push(this.ajax('/upload', 'POST', formData, () => {
                 this.uploadProgress(event, file);
             }, ()=>{
                 this.startTimeUpload = Date.now();
+            }));*/
+
+            filesPromises.push(new Promise((resolve, reject) => {
+                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
+                let task = fileRef.put(file);
+    
+                task.on('state_changed', snapshot => {
+
+                    this.uploadProgress({
+                        loaded: snapshot.bytesTransferred,
+                        total: snapshot.totalBytes
+                    }, file);
+                    //console.log(snapshot);   
+                    
+                }, error => {
+
+                    console.error(error),
+                    reject(error);
+
+                }, () => {
+
+                    fileRef.getMetadata().then(metadata =>{
+                        
+                        //console.log("SALVO NO STORAGE dados: ", metadata);
+                        resolve(metadata);
+                        
+                    
+                    }).catch(error => {
+                        reject(error);
+                    });
+
+                });
+
             }));
-        
+
+
         })
         return Promise.all(filesPromises);
     }
@@ -337,16 +378,21 @@ class DropBoxController{
     initEventsLi(li){
 
         li.addEventListener('dblclick', event => {
-            console.log('OLÁ')
             let file = JSON.parse(li.dataset.file);
             
             switch(file.type){
+                
                 case('folder'):
                     this.currentFolder.push(file.name);
                     this.openFolder();
                     break;
+                
                 default:
-                    window.open('/file?path=' + file.path);
+
+                    firebase.storage().ref(file.path).getDownloadURL().then(url => {
+                        window.open(url);
+                    });
+                   
                     break;
             }
 

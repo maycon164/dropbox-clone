@@ -224,7 +224,7 @@ class DropBoxController{
                         total: snapshot.totalBytes
                     }, file);
                     //console.log(snapshot);   
-                    
+
                 }, error => {
 
                     console.error(error),
@@ -255,15 +255,28 @@ class DropBoxController{
         let promises = [];
 
         this.getFilesSelection().forEach(li => {
-            let key = li.dataset.key;
-            let path = JSON.parse(li.dataset.file).path;
-            
-            let formData = new FormData();
+            let file = JSON.parse(li.dataset.file);
+
+            promises.push(new Promise((resolve, reject) => {
+                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
+                let key = li.dataset.key;
+                fileRef.delete().then(() => {
+                    resolve({
+                        fields:{
+                            key
+                        }
+                    })
+                }).catch(error => {
+                    reject(error);
+                });
+            }));
+
+            /*let formData = new FormData();
             
             formData.append('path', path);
             formData.append('key', key);
 
-            promises.push(this.ajax('/file', 'DELETE', formData));
+            promises.push(this.ajax('/file', 'DELETE', formData));*/    
         });
         
         return Promise.all(promises);   

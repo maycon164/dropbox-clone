@@ -69,6 +69,7 @@ class DropBoxController{
             this.deleteTask().then(responses => {
                 //Deletar do firebase
                 responses.forEach(resp => {
+                    console.log(resp)
                     if(resp.fields.key){
                         this.getFirebaseRef().child(resp.fields.key).remove();
                     }
@@ -256,13 +257,19 @@ class DropBoxController{
         return new Promise((resolve, reject) => {
 
             let folderRef = this.getFirebaseRef(ref + '/' + name);
-        
+
+            folderRef.get().then(snap => {
+                if(!snap.exists()){
+                    resolve();
+                    return;
+                }
+            });
+
             folderRef.on('value', snapshot => {
                 folderRef.off('value');
                 snapshot.forEach(item => {
                     let key = item.key;
                     let data = item.val();
-    
                     if(data.type === 'folder'){
                         console.log('======OUTRA PASTA======');
                         
@@ -295,6 +302,7 @@ class DropBoxController{
                     }
 
                 });
+                
             });
 
             //REMOVENDO O ARQUIVO Q SERVE DE ICONE
@@ -314,14 +322,15 @@ class DropBoxController{
             promises.push(new Promise((resolve, reject) => {
                 
                 if(file.type === 'folder'){
-
+                    console.log(key);
                     this.removeFolderTask(this.currentFolder.join('/'), file.name).then(() => {
+                        console.log('OLA: ', key)
                         resolve({
                             fields:{
                                 key
                             }
                         })
-                    })
+                    }).catch(error => console.log(error));
 
                 }else if(file.type){
 
